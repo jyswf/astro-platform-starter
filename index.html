@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A*寻路算法可视化增强版</title>
+    <title>赋能中小学教学的AI工具推荐</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
         
         body {
@@ -16,1513 +20,718 @@
             line-height: 1.6;
             color: #333;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            padding: 25px;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 20px;
+            font-size: 1.4rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        h3:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 70%;
+            background-color: var(--accent-color);
+            border-radius: 3px;
+        }
+        
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 5px solid var(--primary-color);
             position: relative;
             overflow: hidden;
         }
         
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #3498db, #2ecc71, #e74c3c, #f39c12);
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
         
-        h1 {
-            text-align: center;
-            margin: 15px 0;
-            color: #2c3e50;
-            font-size: 2.2rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        .card h4 {
+            margin-top: 0;
+            color: var(--dark-color);
         }
         
-        .description {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #7f8c8d;
-            font-size: 1.1rem;
-        }
-        
-        .main-content {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .left-panel {
-            flex: 1;
-            min-width: 300px;
-        }
-        
-        .right-panel {
-            flex: 2;
-            min-width: 500px;
-        }
-        
-        .control-panel {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-        
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .control-group label {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.9rem;
-        }
-        
-        select, input {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background-color: white;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-        }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-        
-        button {
-            padding: 10px 16px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .btn-primary {
-            background-color: #3498db;
-        }
-        
-        .btn-success {
-            background-color: #2ecc71;
-        }
-        
-        .btn-danger {
-            background-color: #e74c3c;
-        }
-        
-        .btn-warning {
-            background-color: #f39c12;
-        }
-        
-        .grid-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 25px;
-            overflow: auto;
-            padding: 10px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        #grid {
-            display: grid;
-            border: 1px solid #bdc3c7;
-            background-color: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .cell {
-            width: 25px;
-            height: 25px;
-            border: 1px solid #dfe6e9;
-            cursor: pointer;
+        .tool-item {
+            margin-bottom: 10px;
+            padding-left: 15px;
             position: relative;
-            transition: all 0.2s;
         }
         
-        .cell:hover {
-            transform: scale(1.1);
-            z-index: 2;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .cell.start {
-            background-color: #2ecc71;
-            box-shadow: 0 0 10px #2ecc71;
-        }
-        
-        .cell.end {
-            background-color: #e74c3c;
-            box-shadow: 0 0 10px #e74c3c;
-        }
-        
-        .cell.wall {
-            background-color: #2c3e50;
-        }
-        
-        .cell.visited {
-            background-color: rgba(52, 152, 219, 0.7);
-        }
-        
-        .cell.path {
-            background-color: rgba(241, 196, 15, 0.9);
-        }
-        
-        .cell.weight {
-            background-color: rgba(155, 89, 182, 0.3);
-        }
-        
-        .weight-value {
+        .tool-item:before {
+            content: "•";
+            color: var(--accent-color);
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 10px;
+            left: 0;
             font-weight: bold;
-            color: #7d3c98;
         }
         
-        .weight-control, .heuristic-control {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        
-        .weight-slider, .heuristic-slider {
-            width: 100%;
-            margin: 10px 0;
-        }
-        
-        .weight-preview {
+        .tool-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            background-color: rgba(155, 89, 182, 0.3);
-            vertical-align: middle;
-            margin-left: 10px;
+            margin-left: 5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: rgba(52, 152, 219, 0.1);
         }
         
-        .heuristic-info {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #e8f4fc;
-            border-radius: 5px;
-            border-left: 3px solid #3498db;
-            font-size: 0.9rem;
+        .tool-link:hover {
+            color: var(--accent-color);
+            background-color: rgba(231, 76, 60, 0.1);
+            text-decoration: none;
         }
         
-        .legend {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin: 25px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
+        .highlight {
+            font-weight: bold;
+            color: var(--accent-color);
         }
         
-        .legend-item {
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        .platform-card {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(46, 204, 113, 0.05) 100%);
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .platform-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: var(--transition);
         }
         
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
+        .platform-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        .stats {
+        .platform-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
             display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: bold;
-            color: #3498db;
         }
         
-        .stat-label {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-        }
-        
-        .algorithm-info {
-            margin-top: 25px;
+        footer {
+            text-align: center;
             padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border-left: 5px solid #3498db;
-        }
-        
-        .algorithm-info h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .algorithm-info p {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-        
-        @media (max-width: 1100px) {
-            .main-content {
-                flex-direction: column;
-            }
+            margin-top: 50px;
+            color: #666;
+            font-size: 0.9rem;
         }
         
         @media (max-width: 768px) {
-            .cell {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .control-panel {
+            .card-container {
                 grid-template-columns: 1fr;
             }
             
-            .stats {
-                flex-direction: column;
-                gap: 15px;
+            h1 {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>A*寻路算法可视化增强版</h1>
-        <p class="description">选择算法和设置，在网格中绘制障碍物，设置起点和终点，然后运行算法</p>
+        <header>
+            <h1>赋能中小学教学的AI工具推荐</h1>
+            <p>精选优质AI工具，助力教育教学创新</p>
+        </header>
         
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="control-panel">
-                    <div class="control-group">
-                        <label for="algorithm">选择算法</label>
-                        <select id="algorithm">
-                            <option value="astar">A* 算法</option>
-                            <option value="greedy">贪婪最佳优先搜索</option>
-                            <option value="dijkstra">Dijkstra算法</option>
-                        </select>
+        <div class="section">
+            <h2>一、促教工具</h2>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>教学资料生成</h3>
+                    <div class="tool-item">
+                        <span class="highlight">教学设计</span>:
+                        <a href="https://ai.jbangai.com/" class="tool-link" target="_blank">匠邦AI</a>
+                        <a href="https://www.ourteacher.cc/" class="tool-link" target="_blank">ourTeacher</a>
+                        <a href="https://i.songguoedu.com/dashboard" class="tool-link" target="_blank">我的松果</a>
                     </div>
-                    
-                    <div class="control-group">
-                        <label for="heuristic">启发式函数</label>
-                        <select id="heuristic">
-                            <option value="manhattan">曼哈顿距离</option>
-                            <option value="euclidean">欧几里得距离</option>
-                            <option value="chebyshev">切比雪夫距离</option>
-                        </select>
+                    <div class="tool-item">
+                        <span class="highlight">PPT课件</span>:
+                        <a href="https://www.islide.cc/feature/wordai" class="tool-link" target="_blank">iSlideAI在线制作一键自动生成</a>
+                        <a href="https://www.doubao.com/" class="tool-link" target="_blank">豆包</a>/
+                        <a href="https://www.deepseek.com/" class="tool-link" target="_blank">DeepSeek</a>生成文稿
+                        +
+                        <a href="https://www.kimi.com/" class="tool-link" target="_blank">Kimi</a>生成PPT
+                        <a href="https://mindshow.fun/" class="tool-link" target="_blank">minshow所思所见</a>
+                        <a href="https://www.tiangong.cn" class="tool-link" target="_blank">天工</a>
                     </div>
-                    
-                    <div class="control-group">
-                        <label for="mazeType">迷宫生成</label>
-                        <select id="mazeType">
-                            <option value="none">无迷宫</option>
-                            <option value="random">随机障碍</option>
-                            <option value="prim">Prim算法迷宫</option>
-                            <option value="recursive">递归分割迷宫</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="speed">速度</label>
-                        <select id="speed">
-                            <option value="5">非常慢</option>
-                            <option value="10">慢</option>
-                            <option value="30" selected>中速</option>
-                            <option value="60">快速</option>
-                            <option value="100">非常快</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="diagonal">移动方式</label>
-                        <select id="diagonal">
-                            <option value="false">仅四方向</option>
-                            <option value="true">允许对角线</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="weightToggle">权重功能</label>
-                        <select id="weightToggle">
-                            <option value="false">关闭</option>
-                            <option value="true">开启</option>
-                        </select>
+                    <div class="tool-item">
+                        <span class="highlight">三维微课</span>:
+                        <a href="https://ai.inibiru.com/" class="tool-link" target="_blank">AI互动应用平台</a>
+                        <a href="https://zk.91suke.com/#/home" class="tool-link" target="_blank">智课</a>
                     </div>
                 </div>
                 
-                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-                    <button id="setStart" class="btn-success">设置起点</button>
-                    <button id="setEnd" class="btn-danger">设置终点</button>
-                    <button id="setWall" class="btn-primary">绘制墙壁</button>
-                    <button id="setWeight" class="btn-warning">设置权重</button>
-                    <button id="generateMaze" class="btn-primary">生成迷宫</button>
-                    <button id="clearWalls" class="btn-primary">清除墙壁</button>
-                    <button id="clearPath" class="btn-primary">清除路径</button>
-                    <button id="runAlgorithm" class="btn-success">运行算法</button>
-                </div>
-                
-                <div class="weight-control">
-                    <h3>单元格权重设置</h3>
-                    <p>当前权重值: <span id="currentWeightValue">5</span> <div class="weight-preview"></div></p>
-                    <input type="range" id="weightSlider" class="weight-slider" min="1" max="10" value="5">
-                    <p>说明：权重值越高，通过该单元格的成本越高。算法会优先选择权重低的路径。</p>
-                </div>
-                
-                <div class="heuristic-control">
-                    <h3>启发函数权重设置</h3>
-                    <p>当前启发权重: <span id="currentHeuristicWeight">1.0</span></p>
-                    <input type="range" id="heuristicWeightSlider" class="heuristic-slider" min="0" max="5" step="0.1" value="1.0">
-                    <div class="heuristic-info">
-                        <p>启发权重影响算法行为：</p>
-                        <ul>
-                            <li>权重 = 0: 退化为Dijkstra算法（保证最短路径）</li>
-                            <li>权重 = 1: 标准A*算法（保证最短路径）</li>
-                            <li>权重 > 1: 加权A*算法（更快但不保证最短路径）</li>
-                        </ul>
+                <div class="card">
+                    <h3>媒体资源创作</h3>
+                    <div class="tool-item">
+                        <span class="highlight">调研报告</span>:
+                        <a href="https://www.iflow.cn/" class="tool-link" target="_blank">心流AI助手</a>
+                        <a href="https://www.doubao.com/chat/" class="tool-link" target="_blank">豆包深入研究</a>
                     </div>
-                </div>
-                
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="pathLength">0</div>
-                        <div class="stat-label">路径长度</div>
+                    <div class="tool-item">
+                        <span class="highlight">交互动画</span>:
+                        <a href="https://yiyan.baidu.com/" class="tool-link" target="_blank">文心一言</a>
+                        <a href="https://yuanbao.tencent.com/" class="tool-link" target="_blank">腾讯元宝</a>+记事本(txt)→Html网页
+                        <a href="https://www.deepseek.com/" class="tool-link" target="_blank">DeepSeek</a>+
+                        <a href="https://www.trae.com.cn/" class="tool-link" target="_blank">Trae</a>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="visitedNodes">0</div>
-                        <div class="stat-label">已访问节点</div>
+                    <div class="tool-item">
+                        <span class="highlight">网站生成</span>:
+                        <a href="https://www.haisnap.com/" class="tool-link" target="_blank">海新智能HaiSnap</a>
+                        <a href="https://heybossai.com/" class="tool-link" target="_blank">heyBoss Al</a>
+                        <a href="https://www.codeflying.net/#/index" class="tool-link" target="_blank">码上飞</a>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="executionTime">0</div>
-                        <div class="stat-label">执行时间(ms)</div>
+                    <div class="tool-item">
+                        <span class="highlight">打印纸生成</span>:
+                        <a href="https://paperme.toolooz.com/" class="tool-link" target="_blank">纸由我PaperMe</a>
                     </div>
-                </div>
-                
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #2ecc71;"></div>
-                        <span>起点</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #e74c3c;"></div>
-                        <span>终点</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #2c3e50;"></div>
-                        <span>墙壁</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: rgba(52, 152, 219, 0.7);"></div>
-                        <span>已探索</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: rgba(241, 196, 15, 0.9);"></div>
-                        <span>路径</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: rgba(155, 89, 182, 0.3);"></div>
-                        <span>权重</span>
+                    <div class="tool-item">
+                        <span class="highlight">图像创意</span>:
+                        <a href="https://www.doubao.com/chat/create-image" class="tool-link" target="_blank">豆包智能创意</a>
+                        <a href="https://yige.baidu.com/" class="tool-link" target="_blank">文心一格</a>
+                        <a href="https://jiandan.link/image-tools" class="tool-link" target="_blank">简单设计</a>
+                        <a href="https://ai.sohu.com/" class="tool-link" target="_blank">搜狐简单AI</a>
+                        <a href="https://www.fotor.com.cn/" class="tool-link" target="_blank">Fotor懒设计</a>
+                        <a href="https://www.gaoding.com/" class="tool-link" target="_blank">稿定</a>
+                        <a href="https://www.artvy.ai/ai-tools/seaart-ai" class="tool-link" target="_blank">SeaArt人工智能</a>
+                        <a href="https://raphael.app/zh" class="tool-link" target="_blank">Raphael AI</a>
+                        <a href="https://www.uugai.com/" class="tool-link" target="_blank">LOGO设计U钙网</a>
                     </div>
                 </div>
             </div>
             
-            <div class="right-panel">
-                <div class="grid-container">
-                    <div id="grid"></div>
+            <div class="card-container">
+                <div class="card">
+                    <h3>视频创意工具</h3>
+                    <div class="tool-item">
+                        <span class="highlight">单角色视频</span>:
+                        <a href="https://jimeng.jianying.com/ai-tool/home" class="tool-link" target="_blank">即梦AI</a>
+                        <a href="https://hailuoai.com/create" class="tool-link" target="_blank">HailuoAI</a>
+                        <a href="https://www.vidu.cn/create/img2video" class="tool-link" target="_blank">ViduAI</a>
+                        <a href="https://app.klingai.com/cn/text-to-image/new?ra=4" class="tool-link" target="_blank">可灵AI</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">多角色视频</span>:
+                        生成视频→对口型配音(即梦)+剪映、生成分镜头图像→单个视频(豆包)+对口型配音(即梦AI)+剪映
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>数字人制作</h3>
+                    <div class="tool-item">
+                        <span class="highlight">简单口播型</span>:
+                        <a href="https://www.youyan3d.com/home/recently" class="tool-link" target="_blank">有言数字人</a>
+                        <a href="https://minizhixiang.com/platformLogin" class="tool-link" target="_blank">小视智像</a>
+                        <a href="https://zenvideo.qq.com/" class="tool-link" target="_blank">腾讯智影</a>
+                        <a href="https://hifly.cc/" class="tool-link" target="_blank">飞影(5秒视频)</a>
+                        <a href="https://www.kuleiman.com/aiszr/" class="tool-link" target="_blank">酷雷曼AI数字人(30秒视频)</a>
+                        <a href="https://shanjian.tv/custom-lis" class="tool-link" target="_blank">闪剪(t30-35秒视频)</a>
+                        <a href="https://www.chanjing.cc/home/" class="tool-link" target="_blank">蝉镜(2分钟视频)</a>
+                        <a href="https://www.guiyupaas.com/" class="tool-link" target="_blank">星创云(3-5分钟视频)</a>
+                        <a href="https://app.guiji.cn/ipToVideo" class="tool-link" target="_blank">硅语</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">大模型交互型</span>:
+                        <a href="https://duix.guiji.ai/duix-website/dashboard" class="tool-link" target="_blank">DUIX(硅基智能开源平台)</a>
+                        <a href="https://imarketing.console.aliyun.com/" class="tool-link" target="_blank">阿里云磐曦</a>
+                        <a href="https://szr.zrhcai.com/#section4" class="tool-link" target="_blank">中润Ai数字人</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>文件处理</h3>
+                    <div class="tool-item">
+                        <span class="highlight">文字处理</span>:
+                        <a href="https://www.aishort.top/" class="tool-link" target="_blank">AiShort</a>
+                        <a href="https://imagetoprompt.org/zh" class="tool-link" target="_blank">图转提示词</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">图像处理</span>:
+                        <a href="https://magiceraser.pro/zh" class="tool-link" target="_blank">Magic Eraser</a>
+                        <a href="https://image.baidu.com" class="tool-link" target="_blank">百度图片</a>
+                        <a href="https://bgsub.cn/" class="tool-link" target="_blank">BgSub</a>
+                        <a href="https://www.remove.bg/zh" class="tool-link" target="_blank">remove bg</a>
+                        <a href="https://www.iloveimg.com/zh-cn/features" class="tool-link" target="_blank">I IMG</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">声音处理</span>:
+                        <a href="https://vocalremover.org" class="tool-link" target="_blank">Vocal Remover</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">视频处理</span>:
+                        <a href="https://www.capcut.cn/" class="tool-link" target="_blank">剪映</a>
+                        <a href="https://reccloud.cn/" class="tool-link" target="_blank">录咖</a>
+                        <a href="https://vgo.pub/" class="tool-link" target="_blank">VGO.PUB</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">格式转化</span>:
+                        <a href="https://www.autohanding.com/" class="tool-link" target="_blank">印刷体转手写字</a>
+                        <a href="https://www.aconvert.com/cn/pdf/" class="tool-link" target="_blank">aconvert在线转换 PDF文件</a>
+                        <a href="https://texttospeech.im/zh-CN" class="tool-link" target="_blank">文本转语音Text to speech</a>
+                        <a href="https://www.naturalreaders.com/" class="tool-link" target="_blank">NaturalReader</a>
+                        <a href="https://tinywow.com/" class="tool-link" target="_blank">在线格式转换工具TinyWow</a>
+                        <a href="https://convertio.co/" class="tool-link" target="_blank">Convertio</a>
+                        <a href="https://tools.miku.ac/" class="tool-link" target="_blank">MikuTools</a>
+                    </div>
+                </div>
+                
+                <div class="card platform-card">
+                    <h3>开发平台</h3>
+                    <div class="platform-item">
+                        <div class="platform-icon">B</div>
+                        <a href="https://www.coze.cn/home" class="tool-link" target="_blank">字节跳动的扣子</a>
+                    </div>
+                    <div class="platform-item">
+                        <div class="platform-icon">A</div>
+                        <a href="https://bailian.console.aliyun.com/" class="tool-link" target="_blank">阿里云百炼</a>
+                    </div>
+                    <div class="platform-item">
+                        <div class="platform-icon">T</div>
+                        <a href="https://tcb.cloud.tencent.com" class="tool-link" target="_blank">腾讯云开发</a>
+                    </div>
+                    <div class="platform-item">
+                        <div class="platform-icon">V</div>
+                        <a href="https://www.volcengine.com/" class="tool-link" target="_blank">火山引擎</a>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="algorithm-info">
-            <h3>算法信息</h3>
-            <p><strong>A*算法</strong>是一种广泛使用的路径搜索算法，它结合了Dijkstra算法的完备性和贪婪最佳优先搜索的高效性。</p>
-            <p><strong>启发函数权重</strong>用于调整算法在探索过程中对启发式估计的重视程度：</p>
-            <ul>
-                <li>权重 = 0: 算法退化为Dijkstra算法，只考虑从起点到当前节点的实际成本，保证找到最短路径但效率较低</li>
-                <li>权重 = 1: 标准A*算法，平衡实际成本和启发式估计，保证找到最短路径</li>
-                <li>权重 > 1: 加权A*算法，更重视启发式估计，搜索速度更快但可能找不到最短路径</li>
-            </ul>
-            <p>算法使用评估函数 f(n) = g(n) + w * h(n)，其中：</p>
-            <ul>
-                <li>g(n): 从起点到节点n的实际成本</li>
-                <li>h(n): 从节点n到终点的启发式估计成本</li>
-                <li>w: 启发函数权重</li>
-            </ul>
+        <div class="section">
+            <h2>二、辅学工具</h2>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>问答对话</h3>
+                    <div class="tool-item">
+                        <a href="https://www.doubao.com/" class="tool-link" target="_blank">豆包</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.kimi.com/" class="tool-link" target="_blank">Kimi</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.deepseek.com/" class="tool-link" target="_blank">DeepSeek</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://xinghuo.xfyun.cn/" class="tool-link" target="_blank">讯飞星火大模型</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://yiyan.baidu.com/" class="tool-link" target="_blank">文心一言</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://chatglm.cn/" class="tool-link" target="_blank">智谱清言</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://yuanbao.tencent.com/" class="tool-link" target="_blank">腾讯元宝</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>资料搜索</h3>
+                    <div class="tool-item">
+                        <a href="https://www.n.cn/" class="tool-link" target="_blank">纳米AI搜索</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://metaso.cn/" class="tool-link" target="_blank">秘塔AI搜索</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://chat.baidu.com/" class="tool-link" target="_blank">百度AI搜索</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.kimi.com/kimiplus/conph28t7lagf3d1bhq0" class="tool-link" target="_blank">Kimi学术搜索</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.similarsites.com/" class="tool-link" target="_blank">搜相似网站Similarsites</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>知识建构</h3>
+                    <div class="tool-item">
+                        <span class="highlight">知识图谱</span>:
+                        豆包/DeepSeek生成Markdown格式+MindMaster软件
+                    </div>
+                    <div class="tool-item">
+                        豆包/DeepSeek生成Mermaid格式+<a href="https://mermaid-live.nodejs.cn/" class="tool-link" target="_blank">Mermaid编辑器</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.napkin.one/" class="tool-link" target="_blank">Napkin AI</a>自动生成知识图文
+                        <a href="https://www.picdoc.cn/" class="tool-link" target="_blank">PicDoc-Al文本转视觉工具</a>
+                    </div>
+                    <div class="tool-item">
+                        豆包AI编程+PPT
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://app.infography.in/" class="tool-link" target="_blank">Infography在线信息图生成器</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">知识管理</span>:
+                        <a href="https://ima.qq.com/" class="tool-link" target="_blank">ima</a>
+                        <a href="https://www.notion.com/" class="tool-link" target="_blank">Notion</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>智能体创建</h3>
+                    <div class="tool-item">
+                        <span class="highlight">轻量应用型</span>:
+                        <a href="https://www.doubao.com/chat/bot/create" class="tool-link" target="_blank">豆包智能体创建</a>
+                        <a href="https://link-ai.tech/console/createApp" class="tool-link" target="_blank">LinkAI</a>
+                        <a href="https://www.trae.com.cn/" class="tool-link" target="_blank">Trae</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">知识增强型</span>:
+                        <a href="https://yuanqi.tencent.com/" class="tool-link" target="_blank">腾讯元器平台</a>
+                        <a href="https://www.coze.cn/home" class="tool-link" target="_blank">字节跳动的扣子</a>
+                        <a href="https://chatglm.cn/" class="tool-link" target="_blank">智谱清言</a>
+                        <a href="https://agents.baidu.com/" class="tool-link" target="_blank">百度文心智能体平台</a>
+                        <a href="https://lke.cloud.tencent.com/lke#/experience-center/" class="tool-link" target="_blank">腾讯云智能体开发平台</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">内容创作型</span>:
+                        <a href="https://training.xfyun.cn/modelSquare" class="tool-link" target="_blank">讯飞星辰</a>
+                        <a href="http://www.flowring.com.cn/" class="tool-link" target="_blank">Agentflow智云版</a>
+                        <a href="https://dify.ai/zh" class="tool-link" target="_blank">Dify</a>
+                    </div>
+                </div>
+            </div>
         </div>
+        
+        <div class="section">
+            <h2>三、助研工具</h2>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>教研工具</h3>
+                    <div class="tool-item">
+                        <span class="highlight">学习培训记录</span>:
+                        <a href="https://www.tongyi.com/live" class="tool-link" target="_blank">通义实时记录</a>
+                        <a href="https://itingnao.com/home" class="tool-link" target="_blank">听脑</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">课堂行为分析</span>:
+                        <a href="https://aihaoji.com/zh" class="tool-link" target="_blank">Ai好记</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">视频解构</span>:
+                        <a href="https://linkmind.chat/base/#/creafix-ai" class="tool-link" target="_blank">LinkMind</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">数据分析</span>:
+                        <a href="https://workspace.chatexcel.com/#/excelPro" class="tool-link" target="_blank">CHATEXCEL</a>
+                        飞书多维表格
+                        <a href="https://flourish.studio/" class="tool-link" target="_blank">Flourish</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">教研平台</span>:
+                        <a href="https://i.songguoedu.com/dashboard" class="tool-link" target="_blank">我的松果</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>科研工具</h3>
+                    <div class="tool-item">
+                        <span class="highlight">修文润色</span>:
+                        <a href="https://www.doubao.com/" class="tool-link" target="_blank">豆包</a>
+                        <a href="https://www.kimi.com/" class="tool-link" target="_blank">Kimi</a>
+                        <a href="https://yiyan.baidu.com/" class="tool-link" target="_blank">文心一言</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">文章校对</span>:
+                        <a href="https://www.midu.com/jdt/" class="tool-link" target="_blank">蜜度校对通</a>
+                        <a href="https://bjhm.com.cn/darkhorse/" class="tool-link" target="_blank">WPS黑马校对</a>
+                        咪鼠AI
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">文献分析</span>:
+                        <a href="https://findinai.cn/papers" class="tool-link" target="_blank">Findin飞引</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>四、学科专属工具</h2>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>小学数学</h3>
+                    <div class="tool-item">
+                        <a href="https://mathtool.ruizhiyun.net/" class="tool-link" target="_blank">睿知云交互式教学工具</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://ai.xsj21.com/" class="tool-link" target="_blank">数小新</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>小学科学</h3>
+                    <div class="tool-item">
+                        <a href="https://auth.smartedu.cn/uias/" class="tool-link" target="_blank">国家智慧教育公共服务平台</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>语文</h3>
+                    <div class="tool-item">
+                        <span class="highlight">沉浸式学习</span>:
+                        易AI(文学素养)、冒泡鸭
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.shenyandayi.com/" class="tool-link" target="_blank">深言达意-找词找句</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">文风意境生成</span>:
+                        <a href="https://tongyi.aliyun.com/wanxiang/" class="tool-link" target="_blank">通义万相</a>
+                        <a href="https://www.qiyuai.net/" class="tool-link" target="_blank">奇域AI</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">作业批改</span>:
+                        小猿作文、<a href="https://pro.bishen.net.cn/" class="tool-link" target="_blank">笔神作业批改</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="http://www.an2.net" class="tool-link" target="_blank">免费字帖生成</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://wqbook.wqxuetang.com/" class="tool-link" target="_blank">文泉书局</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>数学</h3>
+                    <div class="tool-item">
+                        <a href="https://auth.smartedu.cn/uias/login" class="tool-link" target="_blank">国家智慧教育公共服务平台</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://phet.colorado.edu/zh_CN/" class="tool-link" target="_blank">数学的交互式模拟教材</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.geogebra.org/calculator" class="tool-link" target="_blank">计算器套件-GeoGebra</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.wolframalpha.com/" class="tool-link" target="_blank">计算型智能</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">APP</span>:
+                        作业批改Photomath、答疑九章随时问、GothAI
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>英语</h3>
+                    <div class="tool-item">
+                        <span class="highlight">外语学习</span>:
+                        <a href="https://www.duolingo.com/" class="tool-link" target="_blank">多邻国</a>
+                        <a href="https://www.lingohut.com/zh" class="tool-link" target="_blank">LingoHut</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">口语训练</span>:
+                        SpeakGuru咕噜口语、HiEcho口语教练、A1外教、TalkAl练口语、豆包
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.naturalreaders.com/" class="tool-link" target="_blank">听力训练</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.deepl.com/zh/translator" class="tool-link" target="_blank">DeepL翻译</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>科学</h3>
+                    <div class="tool-item">
+                        <a href="https://phet.colorado.edu/zh_CN/" class="tool-link" target="_blank">科学的交互式模拟教材</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://xnmy.cdstm.cn/" class="tool-link" target="_blank">虚拟漫游科技场馆</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">APP</span>:
+                        NB实验室(学科虚拟实验)、物理实验室(直观物理原理)、micro(创造培养微生物)、life(动态解析人体构造)、space(沉浸式天文探索)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>历史</h3>
+                    <div class="tool-item">
+                        <a href="https://www.allhistory.com/" class="tool-link" target="_blank">全历史</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>地理</h3>
+                    <div class="tool-item">
+                        <a href="http://bzdt.ch.mnr.gov.cn/" class="tool-link" target="_blank">标准地图服务系统</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://ageeye.app.ditushu.com/" class="tool-link" target="_blank">观沧海-地图共享知识</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>信息科技</h3>
+                    <div class="tool-item">
+                        豆包生成程序+Python计算机语言软件
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">人工智能编程助手：</span>
+                        <a href="https://www.cursor.com/cn/downloads" class="tool-link" target="_blank">Cursor</a>
+                        <a href="https://www.trae.cn/ide/download" class="tool-link" target="_blank">Trae</a>
+                        <a href="https://inscode.csdn.net/ide" class="tool-link" target="_blank">InsCode.</a>
+                        <a href="https://qoder.com/?utm_source=ai-bot.cn" class="tool-link" target="_blank">Qoder</a>
+                        <a href="https://wenku.baidu.com/ndcore/browse/aiunion?fr=options_AIcard_1&tabType=genflow&_wkts_=1755968204328&bdQuery=genflow%202.0&t=1755968269794&aiCreat=genflow" class="tool-link" target="_blank">GenFlow2.0</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">人工智能模型训练平台：</span>
+                        <a href="https://www.openinnolab.org.cn/pjedu/home" class="tool-link" target="_blank">浦育</a>
+                        <a href="https://train.aimaker.space/train/——" class="tool-link" target="_blank">英荔 AI 训练平台</a>
+                        <a href="https://ai.zmrobo.com/ailab" class="tool-link" target="_blank">中鸣人工智能平台</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://zglg.work/" class="tool-link" target="_blank">AI教程和编程练习题库</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>艺术</h3>
+                    <div class="tool-item">
+                        <a href="https://www.nbfox.com/" class="tool-link" target="_blank">麦田艺术</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container">
+                <div class="card">
+                    <h3>特教</h3>
+                    <div class="tool-item">
+                        <a href="https://www.tejiao123.com/" class="tool-link" target="_blank">七维特教AI伙伴</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>全学科</h3>
+                    <div class="tool-item">
+                        <span class="highlight">备课工具</span>:
+                        <a href="https://www.ourteacher.cc/" class="tool-link" target="_blank">ourTeacher</a>
+                        <a href="https://www.laoshibang.com/home/index" class="tool-link" target="_blank">老师帮</a>
+                        <a href="https://tool.browser.qq.com/" class="tool-link" target="_blank">帮小忙</a>
+                        <a href="https://ai.jbangai.com/" class="tool-link" target="_blank">匠邦AI</a>
+                        <a href="https://i.songguoedu.com/dashboard" class="tool-link" target="_blank">我的松果</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">AI绘本</span>:
+                        <a href="https://www.n.cn/" class="tool-link" target="_blank">纳米搜索</a>
+                        <a href="https://xinxiang.baidu.com/" class="tool-link" target="_blank">心响APP</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://videotutor.io/" class="tool-link" target="_blank">生成科普视频</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.modevol.com/" class="tool-link" target="_blank">渐构Modevol视频</a>
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://www.guangsuxie.com/static/college-write-web/index" class="tool-link" target="_blank">智能写作</a>
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">答疑</span>: 快问ai
+                    </div>
+                    <div class="tool-item">
+                        <span class="highlight">作业辅导</span>: 快对AI
+                    </div>
+                    <div class="tool-item">
+                        <a href="https://book.tstrs.me/" class="tool-link" target="_blank">电子书下载</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025赋能中小学教学的AI工具推荐 | 最后更新: 2025年7月</p>
+        </footer>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 网格参数
-            const rows = 20;
-            const cols = 30;
-            let grid = [];
-            let startNode = {row: 5, col: 5};
-            let endNode = {row: 15, col: 25};
-            let drawingMode = 'wall'; // 'start', 'end', 'wall', 'weight'
-            let isMouseDown = false;
-            let algorithmRunning = false;
-            let currentWeightValue = 5;
-            let currentHeuristicWeight = 1.0;
-            
-            // 初始化网格
-            function initializeGrid() {
-                const gridElement = document.getElementById('grid');
-                gridElement.style.gridTemplateColumns = `repeat(${cols}, 25px)`;
-                gridElement.innerHTML = '';
-                
-                // 创建网格
-                grid = Array(rows).fill().map(() => Array(cols).fill(0));
-                
-                // 创建单元格
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'cell';
-                        cell.dataset.row = row;
-                        cell.dataset.col = col;
-                        
-                        cell.addEventListener('mousedown', () => {
-                            isMouseDown = true;
-                            handleCellInteraction(row, col);
-                        });
-                        
-                        cell.addEventListener('mouseenter', () => {
-                            if (isMouseDown) {
-                                handleCellInteraction(row, col);
-                            }
-                        });
-                        
-                        cell.addEventListener('mouseup', () => {
-                            isMouseDown = false;
-                        });
-                        
-                        gridElement.appendChild(cell);
-                    }
-                }
-                
-                // 设置初始起点和终点
-                updateCell(startNode.row, startNode.col, 'start');
-                updateCell(endNode.row, endNode.col, 'end');
-                
-                // 重置统计信息
-                document.getElementById('pathLength').textContent = '0';
-                document.getElementById('visitedNodes').textContent = '0';
-                document.getElementById('executionTime').textContent = '0';
-            }
-            
-            // 处理单元格交互
-            function handleCellInteraction(row, col) {
-                if (algorithmRunning) return;
-                
-                if (drawingMode === 'start') {
-                    updateCell(startNode.row, startNode.col, '');
-                    startNode = {row, col};
-                    updateCell(row, col, 'start');
-                } else if (drawingMode === 'end') {
-                    updateCell(endNode.row, endNode.col, '');
-                    endNode = {row, col};
-                    updateCell(row, col, 'end');
-                } else if (drawingMode === 'wall') {
-                    if ((row === startNode.row && col === startNode.col) || 
-                        (row === endNode.row && col === endNode.col)) {
-                        return;
-                    }
-                    
-                    const currentState = grid[row][col];
-                    if (currentState === 'wall') {
-                        grid[row][col] = 0;
-                        updateCell(row, col, '');
-                    } else {
-                        grid[row][col] = 'wall';
-                        updateCell(row, col, 'wall');
-                    }
-                } else if (drawingMode === 'weight') {
-                    if ((row === startNode.row && col === startNode.col) || 
-                        (row === endNode.row && col === endNode.col) ||
-                        grid[row][col] === 'wall') {
-                        return;
-                    }
-                    
-                    if (grid[row][col] && grid[row][col].type === 'weight') {
-                        grid[row][col] = 0;
-                        updateCell(row, col, '');
-                    } else {
-                        grid[row][col] = {type: 'weight', value: currentWeightValue};
-                        updateCell(row, col, 'weight');
-                        
-                        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-                        if (!cell.querySelector('.weight-value')) {
-                            const weightValue = document.createElement('div');
-                            weightValue.className = 'weight-value';
-                            weightValue.textContent = currentWeightValue;
-                            cell.appendChild(weightValue);
-                        } else {
-                            cell.querySelector('.weight-value').textContent = currentWeightValue;
-                        }
-                    }
-                }
-            }
-            
-            // 更新单元格状态
-            function updateCell(row, col, type) {
-                const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-                cell.className = 'cell';
-                
-                // 清除权重值显示
-                const weightValue = cell.querySelector('.weight-value');
-                if (weightValue) {
-                    weightValue.remove();
-                }
-                
-                if (type) {
-                    cell.classList.add(type);
-                    
-                    if (type === 'weight') {
-                        grid[row][col] = {type: 'weight', value: currentWeightValue};
-                        const weightValue = document.createElement('div');
-                        weightValue.className = 'weight-value';
-                        weightValue.textContent = currentWeightValue;
-                        cell.appendChild(weightValue);
-                    } else {
-                        grid[row][col] = type;
-                    }
-                } else {
-                    grid[row][col] = 0;
-                }
-            }
-            
-            // 设置按钮事件
-            document.getElementById('setStart').addEventListener('click', () => {
-                drawingMode = 'start';
-            });
-            
-            document.getElementById('setEnd').addEventListener('click', () => {
-                drawingMode = 'end';
-            });
-            
-            document.getElementById('setWall').addEventListener('click', () => {
-                drawingMode = 'wall';
-            });
-            
-            document.getElementById('setWeight').addEventListener('click', () => {
-                drawingMode = 'weight';
-            });
-            
-            document.getElementById('clearWalls').addEventListener('click', () => {
-                if (algorithmRunning) return;
-                
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] === 'wall' || 
-                            (grid[row][col] && grid[row][col].type === 'weight')) {
-                            grid[row][col] = 0;
-                            updateCell(row, col, '');
-                        }
-                    }
-                }
-            });
-            
-            document.getElementById('clearPath').addEventListener('click', () => {
-                if (algorithmRunning) return;
-                
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] === 'visited' || grid[row][col] === 'path') {
-                            grid[row][col] = 0;
-                            updateCell(row, col, '');
-                        }
-                    }
-                }
-                
-                // 恢复起点和终点
-                updateCell(startNode.row, startNode.col, 'start');
-                updateCell(endNode.row, endNode.col, 'end');
-                
-                // 重置统计信息
-                document.getElementById('pathLength').textContent = '0';
-                document.getElementById('visitedNodes').textContent = '0';
-                document.getElementById('executionTime').textContent = '0';
-            });
-            
-            document.getElementById('generateMaze').addEventListener('click', generateMaze);
-            document.getElementById('runAlgorithm').addEventListener('click', runAlgorithm);
-            
-            // 权重滑块事件
-            const weightSlider = document.getElementById('weightSlider');
-            const currentWeightDisplay = document.getElementById('currentWeightValue');
-            
-            weightSlider.addEventListener('input', function() {
-                currentWeightValue = parseInt(this.value);
-                currentWeightDisplay.textContent = currentWeightValue;
-                
-                // 更新所有已有权重单元格的值
-                if (drawingMode === 'weight') {
-                    for (let row = 0; row < rows; row++) {
-                        for (let col = 0; col < cols; col++) {
-                            if (grid[row][col] && grid[row][col].type === 'weight') {
-                                grid[row][col].value = currentWeightValue;
-                                const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-                                const weightValue = cell.querySelector('.weight-value');
-                                if (weightValue) {
-                                    weightValue.textContent = currentWeightValue;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // 启发函数权重滑块事件
-            const heuristicWeightSlider = document.getElementById('heuristicWeightSlider');
-            const currentHeuristicWeightDisplay = document.getElementById('currentHeuristicWeight');
-            
-            heuristicWeightSlider.addEventListener('input', function() {
-                currentHeuristicWeight = parseFloat(this.value);
-                currentHeuristicWeightDisplay.textContent = currentHeuristicWeight.toFixed(1);
-            });
-            
-            // 生成迷宫
-            function generateMaze() {
-                if (algorithmRunning) return;
-                
-                const mazeType = document.getElementById('mazeType').value;
-                if (mazeType === 'none') return;
-                
-                // 清除现有墙壁和路径
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] === 'wall' || grid[row][col] === 'visited' || 
-                            grid[row][col] === 'path' || 
-                            (grid[row][col] && grid[row][col].type === 'weight')) {
-                            grid[row][col] = 0;
-                            updateCell(row, col, '');
-                        }
-                    }
-                }
-                
-                // 恢复起点和终点
-                updateCell(startNode.row, startNode.col, 'start');
-                updateCell(endNode.row, endNode.col, 'end');
-                
-                if (mazeType === 'random') {
-                    // 随机生成墙壁
-                    for (let row = 0; row < rows; row++) {
-                        for (let col = 0; col < cols; col++) {
-                            if ((row === startNode.row && col === startNode.col) || 
-                                (row === endNode.row && col === endNode.col)) {
-                                continue;
-                            }
-                            
-                            if (Math.random() < 0.25) {
-                                grid[row][col] = 'wall';
-                                updateCell(row, col, 'wall');
-                            }
-                        }
-                    }
-                } else if (mazeType === 'prim') {
-                    // 使用Prim算法生成迷宫
-                    generatePrimMaze();
-                } else if (mazeType === 'recursive') {
-                    // 使用递归分割算法生成迷宫
-                    generateRecursiveDivisionMaze();
-                }
-            }
-            
-            // 使用Prim算法生成迷宫
-            function generatePrimMaze() {
-                // 初始化所有单元格为墙壁
-                for (let row = 1; row < rows-1; row++) {
-                    for (let col = 1; col < cols-1; col++) {
-                        if ((row === startNode.row && col === startNode.col) || 
-                            (row === endNode.row && col === endNode.col)) {
-                            continue;
-                        }
-                        
-                        grid[row][col] = 'wall';
-                        updateCell(row, col, 'wall');
-                    }
-                }
-                
-                // 随机选择一个起点
-                let startRow = Math.floor(Math.random() * (rows-2)) + 1;
-                let startCol = Math.floor(Math.random() * (cols-2)) + 1;
-                
-                // 确保起点不是真正的起点或终点
-                while ((startRow === startNode.row && startCol === startNode.col) || 
-                       (startRow === endNode.row && startCol === endNode.col)) {
-                    startRow = Math.floor(Math.random() * (rows-2)) + 1;
-                    startCol = Math.floor(Math.random() * (cols-2)) + 1;
-                }
-                
-                // 将起点设为路径
-                grid[startRow][startCol] = 0;
-                updateCell(startRow, startCol, '');
-                
-                //  frontiers 存储墙壁列表
-                let frontiers = [];
-                addWallsToFrontier(startRow, startCol, frontiers);
-                
-                while (frontiers.length > 0) {
-                    // 随机选择一个墙壁
-                    const randomIndex = Math.floor(Math.random() * frontiers.length);
-                    const wall = frontiers[randomIndex];
-                    frontiers.splice(randomIndex, 1);
-                    
-                    const row = wall.row;
-                    const col = wall.col;
-                    
-                    // 检查墙壁是否仍然是墙壁
-                    if (grid[row][col] !== 'wall') continue;
-                    
-                    // 计算相邻的路径单元格数量
-                    let pathCount = 0;
-                    const neighbors = getNeighbors(row, col, true, false);
-                    
-                    for (const neighbor of neighbors) {
-                        if (grid[neighbor.row][neighbor.col] !== 'wall') {
-                            pathCount++;
-                        }
-                    }
-                    
-                    // 如果只有一个相邻路径，将此墙壁转换为路径
-                    if (pathCount === 1) {
-                        grid[row][col] = 0;
-                        updateCell(row, col, '');
-                        
-                        // 添加相邻的墙壁到frontiers
-                        addWallsToFrontier(row, col, frontiers);
-                    }
-                }
-                
-                // 确保起点和终点连通
-                ensureConnectivity();
-            }
-            
-            // 添加墙壁到frontier
-            function addWallsToFrontier(row, col, frontiers) {
-                const directions = [
-                    {dr: -1, dc: 0}, // 上
-                    {dr: 1, dc: 0},  // 下
-                    {dr: 0, dc: -1}, // 左
-                    {dr: 0, dc: 1}   // 右
-                ];
-                
-                for (const dir of directions) {
-                    const newRow = row + dir.dr * 2;
-                    const newCol = col + dir.dc * 2;
-                    
-                    if (newRow > 0 && newRow < rows-1 && newCol > 0 && newCol < cols-1 && 
-                        grid[newRow][newCol] === 'wall') {
-                        frontiers.push({row: newRow, col: newCol});
-                    }
-                }
-            }
-            
-            // 使用递归分割算法生成迷宫
-            function generateRecursiveDivisionMaze() {
-                // 初始化所有单元格为路径
-                for (let row = 1; row < rows-1; row++) {
-                    for (let col = 1; col < cols-1; col++) {
-                        if ((row === startNode.row && col === startNode.col) || 
-                            (row === endNode.row && col === endNode.col)) {
-                            continue;
-                        }
-                        
-                        grid[row][col] = 0;
-                        updateCell(row, col, '');
-                    }
-                }
-                
-                // 添加边界墙
-                for (let row = 0; row < rows; row++) {
-                    if (row > 0 && row < rows-1) continue;
-                    
-                    for (let col = 0; col < cols; col++) {
-                        if ((row === startNode.row && col === startNode.col) || 
-                            (row === endNode.row && col === endNode.col)) {
-                            continue;
-                        }
-                        
-                        grid[row][col] = 'wall';
-                        updateCell(row, col, 'wall');
-                    }
-                }
-                
-                for (let col = 0; col < cols; col++) {
-                    if (col > 0 && col < cols-1) continue;
-                    
-                    for (let row = 0; row < rows; row++) {
-                        if ((row === startNode.row && col === startNode.col) || 
-                            (row === endNode.row && col === endNode.col)) {
-                            continue;
-                        }
-                        
-                        grid[row][col] = 'wall';
-                        updateCell(row, col, 'wall');
-                    }
-                }
-                
-                // 开始递归分割
-                divide(1, rows-2, 1, cols-2);
-                
-                // 确保起点和终点连通
-                ensureConnectivity();
-            }
-            
-            // 递归分割函数
-            function divide(minRow, maxRow, minCol, maxCol) {
-                // 如果区域太小，停止分割
-                if (maxRow - minRow < 2 || maxCol - minCol < 2) return;
-                
-                // 选择分割方向（水平或垂直）
-                const horizontal = (maxRow - minRow) > (maxCol - minCol);
-                
-                if (horizontal) {
-                    // 水平分割
-                    const wallRow = Math.floor((minRow + maxRow) / 2);
-                    
-                    // 创建墙壁
-                    for (let col = minCol; col <= maxCol; col++) {
-                        if ((wallRow === startNode.row && col === startNode.col) || 
-                            (wallRow === endNode.row && col === endNode.col)) {
-                            continue;
-                        }
-                        
-                        grid[wallRow][col] = 'wall';
-                        updateCell(wallRow, col, 'wall');
-                    }
-                    
-                    // 在墙壁上随机开一个通道
-                    const passageCol = minCol + Math.floor(Math.random() * (maxCol - minCol + 1));
-                    grid[wallRow][passageCol] = 0;
-                    updateCell(wallRow, passageCol, '');
-                    
-                    // 递归分割上下两个区域
-                    divide(minRow, wallRow-1, minCol, maxCol);
-                    divide(wallRow+1, maxRow, minCol, maxCol);
-                } else {
-                    // 垂直分割
-                    const wallCol = Math.floor((minCol + maxCol) / 2);
-                    
-                    // 创建墙壁
-                    for (let row = minRow; row <= maxRow; row++) {
-                        if ((row === startNode.row && wallCol === startNode.col) || 
-                            (row === endNode.row && wallCol === endNode.col)) {
-                            continue;
-                        }
-                        
-                        grid[row][wallCol] = 'wall';
-                        updateCell(row, wallCol, 'wall');
-                    }
-                    
-                    // 在墙壁上随机开一个通道
-                    const passageRow = minRow + Math.floor(Math.random() * (maxRow - minRow + 1));
-                    grid[passageRow][wallCol] = 0;
-                    updateCell(passageRow, wallCol, '');
-                    
-                    // 递归分割左右两个区域
-                    divide(minRow, maxRow, minCol, wallCol-1);
-                    divide(minRow, maxRow, wallCol+1, maxCol);
-                }
-            }
-            
-            // 确保起点和终点连通
-            function ensureConnectivity() {
-                // 简单实现：在起点和终点之间创建一条直接路径（如果可能）
-                const minRow = Math.min(startNode.row, endNode.row);
-                const maxRow = Math.max(startNode.row, endNode.row);
-                const minCol = Math.min(startNode.col, endNode.col);
-                const maxCol = Math.max(startNode.col, endNode.col);
-                
-                // 尝试创建一条L形路径
-                const midRow = Math.floor((minRow + maxRow) / 2);
-                const midCol = Math.floor((minCol + maxCol) / 2);
-                
-                // 水平部分
-                for (let col = minCol; col <= maxCol; col++) {
-                    if (grid[midRow][col] === 'wall') {
-                        grid[midRow][col] = 0;
-                        updateCell(midRow, col, '');
-                    }
-                }
-                
-                // 垂直部分
-                for (let row = minRow; row <= maxRow; row++) {
-                    if (grid[row][midCol] === 'wall') {
-                        grid[row][midCol] = 0;
-                        updateCell(row, midCol, '');
-                    }
-                }
-            }
-            
-            // 运行算法
-            async function runAlgorithm() {
-                if (algorithmRunning) return;
-                
-                const algorithm = document.getElementById('algorithm').value;
-                
-                if (algorithm === 'astar') {
-                    await runAStar();
-                } else if (algorithm === 'greedy') {
-                    await runGreedyBestFirst();
-                } else if (algorithm === 'dijkstra') {
-                    await runDijkstra();
-                }
-            }
-            
-            // 实现A*算法
-            async function runAStar() {
-                algorithmRunning = true;
-                const startTime = performance.now();
-                let visitedCount = 0;
-                
-                // 清除之前的路径
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] === 'visited' || grid[row][col] === 'path') {
-                            grid[row][col] = 0;
-                            updateCell(row, col, '');
-                        }
-                    }
-                }
-                
-                // 恢复起点和终点
-                updateCell(startNode.row, startNode.col, 'start');
-                updateCell(endNode.row, endNode.col, 'end');
-                
-                // A*算法实现
-                const openSet = [];
-                const closedSet = new Set();
-                const cameFrom = new Map();
-                
-                // 节点gScore（从起点到该节点的成本）
-                const gScore = Array(rows).fill().map(() => Array(cols).fill(Infinity));
-                gScore[startNode.row][startNode.col] = 0;
-                
-                // 节点fScore（gScore + 启发式估计值）
-                const fScore = Array(rows).fill().map(() => Array(cols).fill(Infinity));
-                fScore[startNode.row][startNode.col] = currentHeuristicWeight * heuristic(startNode, endNode);
-                
-                // 将起始节点添加到开放列表
-                openSet.push({
-                    row: startNode.row,
-                    col: startNode.col,
-                    f: fScore[startNode.row][startNode.col]
-                });
-                
-                const speed = parseInt(document.getElementById('speed').value);
-                const allowDiagonal = document.getElementById('diagonal').value === 'true';
-                
-                while (openSet.length > 0) {
-                    // 获取f值最小的节点
-                    openSet.sort((a, b) => a.f - b.f);
-                    const current = openSet.shift();
-                    
-                    // 如果到达终点
-                    if (current.row === endNode.row && current.col === endNode.col) {
-                        // 重建路径
-                        const path = [];
-                        let pathLength = 0;
-                        let currentNode = current;
-                        
-                        while (cameFrom.has(`${currentNode.row},${currentNode.col}`)) {
-                            path.unshift(currentNode);
-                            currentNode = cameFrom.get(`${currentNode.row},${currentNode.col}`);
-                            pathLength++;
-                            
-                            // 跳过起点和终点
-                            if (currentNode.row === startNode.row && currentNode.col === startNode.col) {
-                                break;
-                            }
-                        }
-                        
-                        // 显示路径
-                        for (const node of path) {
-                            await sleep(1000 / speed);
-                            if (node.row !== startNode.row || node.col !== startNode.col) {
-                                if (node.row !== endNode.row || node.col !== endNode.col) {
-                                    updateCell(node.row, node.col, 'path');
-                                }
-                            }
-                        }
-                        
-                        const endTime = performance.now();
-                        
-                        // 更新统计信息
-                        document.getElementById('pathLength').textContent = pathLength;
-                        document.getElementById('visitedNodes').textContent = visitedCount;
-                        document.getElementById('executionTime').textContent = Math.round(endTime - startTime);
-                        
-                        algorithmRunning = false;
-                        return;
-                    }
-                    
-                    closedSet.add(`${current.row},${current.col}`);
-                    
-                    if (current.row !== startNode.row || current.col !== startNode.col) {
-                        visitedCount++;
-                        await sleep(1000 / speed);
-                        updateCell(current.row, current.col, 'visited');
-                    }
-                    
-                    // 检查所有邻居
-                    const neighbors = getNeighbors(current.row, current.col, allowDiagonal, true);
-                    
-                    for (const neighbor of neighbors) {
-                        if (closedSet.has(`${neighbor.row},${neighbor.col}`)) {
-                            continue;
-                        }
-                        
-                        // 计算从起点到邻居的临时gScore
-                        let tentativeGScore = gScore[current.row][current.col] + 1;
-                        
-                        // 如果是对角线移动，成本稍高
-                        if (allowDiagonal && 
-                            current.row !== neighbor.row && 
-                            current.col !== neighbor.col) {
-                            tentativeGScore += 0.4; // 对角线移动的额外成本
-                        }
-                        
-                        // 如果单元格有权重，增加成本
-                        if (grid[neighbor.row][neighbor.col] && 
-                            grid[neighbor.row][neighbor.col].type === 'weight') {
-                            tentativeGScore += grid[neighbor.row][neighbor.col].value;
-                        }
-                        
-                        if (tentativeGScore < gScore[neighbor.row][neighbor.col]) {
-                            // 这条路径更好，记录它
-                            cameFrom.set(`${neighbor.row},${neighbor.col}`, current);
-                            gScore[neighbor.row][neighbor.col] = tentativeGScore;
-                            fScore[neighbor.row][neighbor.col] = gScore[neighbor.row][neighbor.col] + currentHeuristicWeight * heuristic(neighbor, endNode);
-                            
-                            // 如果邻居不在开放列表中，添加它
-                            if (!openSet.some(node => node.row === neighbor.row && node.col === neighbor.col)) {
-                                openSet.push({
-                                    row: neighbor.row,
-                                    col: neighbor.col,
-                                    f: fScore[neighbor.row][neighbor.col]
-                                });
-                            }
-                        }
-                    }
-                }
-                
-                // 如果没有找到路径
-                alert('找不到从起点到终点的路径！');
-                const endTime = performance.now();
-                
-                // 更新统计信息
-                document.getElementById('visitedNodes').textContent = visitedCount;
-                document.getElementById('executionTime').textContent = Math.round(endTime - startTime);
-                
-                algorithmRunning = false;
-            }
-            
-            // 实现Dijkstra算法
-            async function runDijkstra() {
-                algorithmRunning = true;
-                const startTime = performance.now();
-                let visitedCount = 0;
-                
-                // 清除之前的路径
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] === 'visited' || grid[row][col] === 'path') {
-                            grid[row][col] = 0;
-                            updateCell(row, col, '');
-                        }
-                    }
-                }
-                
-                // 恢复起点和终点
-                updateCell(startNode.row, startNode.col, 'start');
-                updateCell(endNode.row, endNode.col, 'end');
-                
-                // Dijkstra算法实现
-                const distances = Array(rows).fill().map(() => Array(cols).fill(Infinity));
-                distances[startNode.row][startNode.col] = 0;
-                
-                const previous = {};
-                const unvisited = new Set();
-                
-                // 初始化所有节点
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] !== 'wall') {
-                            unvisited.add(`${row},${col}`);
-                        }
-                    }
-                }
-                
-                const speed = parseInt(document.getElementById('speed').value);
-                const allowDiagonal = document.getElementById('diagonal').value === 'true';
-                
-                while (unvisited.size > 0) {
-                    // 找到未访问节点中距离最小的
-                    let minDistance = Infinity;
-                    let currentNode = null;
-                    
-                    for (const nodeStr of unvisited) {
-                        const [row, col] = nodeStr.split(',').map(Number);
-                        if (distances[row][col] < minDistance) {
-                            minDistance = distances[row][col];
-                            currentNode = {row, col};
-                        }
-                    }
-                    
-                    if (!currentNode) break;
-                    
-                    const nodeStr = `${currentNode.row},${currentNode.col}`;
-                    unvisited.delete(nodeStr);
-                    
-                    // 如果到达终点
-                    if (currentNode.row === endNode.row && currentNode.col === endNode.col) {
-                        // 重建路径
-                        const path = [];
-                        let pathLength = 0;
-                        let node = currentNode;
-                        
-                        while (previous[`${node.row},${node.col}`]) {
-                            path.unshift(node);
-                            node = previous[`${node.row},${node.col}`];
-                            pathLength++;
-                            
-                            // 跳过起点
-                            if (node.row === startNode.row && node.col === startNode.col) {
-                                break;
-                            }
-                        }
-                        
-                        // 显示路径
-                        for (const pathNode of path) {
-                            await sleep(1000 / speed);
-                            if (pathNode.row !== startNode.row || pathNode.col !== startNode.col) {
-                                if (pathNode.row !== endNode.row || pathNode.col !== endNode.col) {
-                                    updateCell(pathNode.row, pathNode.col, 'path');
-                                }
-                            }
-                        }
-                        
-                        const endTime = performance.now();
-                        
-                        // 更新统计信息
-                        document.getElementById('pathLength').textContent = pathLength;
-                        document.getElementById('visitedNodes').textContent = visitedCount;
-                        document.getElementById('executionTime').textContent = Math.round(endTime - startTime);
-                        
-                        algorithmRunning = false;
-                        return;
-                    }
-                    
-                    if (currentNode.row !== startNode.row || currentNode.col !== startNode.col) {
-                        visitedCount++;
-                        await sleep(1000 / speed);
-                        updateCell(currentNode.row, currentNode.col, 'visited');
-                    }
-                    
-                    // 检查所有邻居
-                    const neighbors = getNeighbors(currentNode.row, currentNode.col, allowDiagonal, true);
-                    
-                    for (const neighbor of neighbors) {
-                        if (!unvisited.has(`${neighbor.row},${neighbor.col}`)) {
-                            continue;
-                        }
-                        
-                        // 计算从起点到邻居的距离
-                        let distance = distances[currentNode.row][currentNode.col] + 1;
-                        
-                        // 如果是对角线移动，成本稍高
-                        if (allowDiagonal && 
-                            currentNode.row !== neighbor.row && 
-                            currentNode.col !== neighbor.col) {
-                            distance += 0.4; // 对角线移动的额外成本
-                        }
-                        
-                        // 如果单元格有权重，增加成本
-                        if (grid[neighbor.row][neighbor.col] && 
-                            grid[neighbor.row][neighbor.col].type === 'weight') {
-                            distance += grid[neighbor.row][neighbor.col].value;
-                        }
-                        
-                        if (distance < distances[neighbor.row][neighbor.col]) {
-                            distances[neighbor.row][neighbor.col] = distance;
-                            previous[`${neighbor.row},${neighbor.col}`] = currentNode;
-                        }
-                    }
-                }
-                
-                // 如果没有找到路径
-                alert('找不到从起点到终点的路径！');
-                const endTime = performance.now();
-                
-                // 更新统计信息
-                document.getElementById('visitedNodes').textContent = visitedCount;
-                document.getElementById('executionTime').textContent = Math.round(endTime - startTime);
-                
-                algorithmRunning = false;
-            }
-            
-            // 实现贪婪最佳优先搜索算法
-            async function runGreedyBestFirst() {
-                algorithmRunning = true;
-                const startTime = performance.now();
-                let visitedCount = 0;
-                
-                // 清除之前的路径
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                        if (grid[row][col] === 'visited' || grid[row][col] === 'path') {
-                            grid[row][col] = 0;
-                            updateCell(row, col, '');
-                        }
-                    }
-                }
-                
-                // 恢复起点和终点
-                updateCell(startNode.row, startNode.col, 'start');
-                updateCell(endNode.row, endNode.col, 'end');
-                
-                // 贪婪最佳优先搜索实现
-                const openSet = [];
-                const closedSet = new Set();
-                const cameFrom = new Map();
-                
-                // 将起始节点添加到开放列表
-                openSet.push({
-                    row: startNode.row,
-                    col: startNode.col,
-                    h: heuristic(startNode, endNode)
-                });
-                
-                const speed = parseInt(document.getElementById('speed').value);
-                const allowDiagonal = document.getElementById('diagonal').value === 'true';
-                
-                while (openSet.length > 0) {
-                    // 获取h值最小的节点（最接近目标的节点）
-                    openSet.sort((a, b) => a.h - b.h);
-                    const current = openSet.shift();
-                    
-                    // 如果到达终点
-                    if (current.row === endNode.row && current.col === endNode.col) {
-                        // 重建路径
-                        const path = [];
-                        let pathLength = 0;
-                        let currentNode = current;
-                        
-                        while (cameFrom.has(`${currentNode.row},${currentNode.col}`)) {
-                            path.unshift(currentNode);
-                            currentNode = cameFrom.get(`${currentNode.row},${currentNode.col}`);
-                            pathLength++;
-                            
-                            // 跳过起点和终点
-                            if (currentNode.row === startNode.row && currentNode.col === startNode.col) {
-                                break;
-                            }
-                        }
-                        
-                        // 显示路径
-                        for (const node of path) {
-                            await sleep(1000 / speed);
-                            if (node.row !== startNode.row || node.col !== startNode.col) {
-                                if (node.row !== endNode.row || node.col !== endNode.col) {
-                                    updateCell(node.row, node.col, 'path');
-                                }
-                            }
-                        }
-                        
-                        const endTime = performance.now();
-                        
-                        // 更新统计信息
-                        document.getElementById('pathLength').textContent = pathLength;
-                        document.getElementById('visitedNodes').textContent = visitedCount;
-                        document.getElementById('executionTime').textContent = Math.round(endTime - startTime);
-                        
-                        algorithmRunning = false;
-                        return;
-                    }
-                    
-                    closedSet.add(`${current.row},${current.col}`);
-                    
-                    if (current.row !== startNode.row || current.col !== startNode.col) {
-                        visitedCount++;
-                        await sleep(1000 / speed);
-                        updateCell(current.row, current.col, 'visited');
-                    }
-                    
-                    // 检查所有邻居
-                    const neighbors = getNeighbors(current.row, current.col, allowDiagonal, false);
-                    
-                    for (const neighbor of neighbors) {
-                        if (closedSet.has(`${neighbor.row},${neighbor.col}`)) {
-                            continue;
-                        }
-                        
-                        if (!openSet.some(node => node.row === neighbor.row && node.col === neighbor.col)) {
-                            // 记录路径
-                            cameFrom.set(`${neighbor.row},${neighbor.col}`, current);
-                            
-                            // 计算启发式值
-                            const h = heuristic(neighbor, endNode);
-                            
-                            // 添加到开放列表
-                            openSet.push({
-                                row: neighbor.row,
-                                col: neighbor.col,
-                                h: h
-                            });
-                        }
-                    }
-                }
-                
-                // 如果没有找到路径
-                alert('找不到从起点到终点的路径！');
-                const endTime = performance.now();
-                
-                // 更新统计信息
-                document.getElementById('visitedNodes').textContent = visitedCount;
-                document.getElementById('executionTime').textContent = Math.round(endTime - startTime);
-                
-                algorithmRunning = false;
-            }
-            
-            // 获取邻居节点
-            function getNeighbors(row, col, allowDiagonal, checkWeight) {
-                const neighbors = [];
-                const directions = [
-                    {dr: -1, dc: 0}, // 上
-                    {dr: 1, dc: 0},  // 下
-                    {dr: 0, dc: -1}, // 左
-                    {dr: 0, dc: 1}   // 右
-                ];
-                
-                // 添加对角线方向
-                if (allowDiagonal) {
-                    directions.push(
-                        {dr: -1, dc: -1}, // 左上
-                        {dr: -1, dc: 1},  // 右上
-                        {dr: 1, dc: -1},  // 左下
-                        {dr: 1, dc: 1}    // 右下
-                    );
-                }
-                
-                for (const dir of directions) {
-                    const newRow = row + dir.dr;
-                    const newCol = col + dir.dc;
-                    
-                    if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && 
-                        grid[newRow][newCol] !== 'wall') {
-                        // 如果是对角线移动，检查相邻单元格是否不是墙壁
-                        if (allowDiagonal && dir.dr !== 0 && dir.dc !== 0) {
-                            // 检查水平相邻和垂直相邻的单元格
-                            if (grid[row + dir.dr][col] === 'wall' && 
-                                grid[row][col + dir.dc] === 'wall') {
-                                continue;
-                            }
-                        }
-                        
-                        neighbors.push({row: newRow, col: newCol});
-                    }
-                }
-                
-                return neighbors;
-            }
-            
-            // 启发式函数
-            function heuristic(a, b) {
-                const heuristicType = document.getElementById('heuristic').value;
-                
-                if (heuristicType === 'manhattan') {
-                    // 曼哈顿距离
-                    return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
-                } else if (heuristicType === 'euclidean') {
-                    // 欧几里得距离
-                    return Math.sqrt(Math.pow(a.row - b.row, 2) + Math.pow(a.col - b.col, 2));
-                } else if (heuristicType === 'chebyshev') {
-                    // 切比雪夫距离
-                    return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col));
-                }
-                
-                return 0;
-            }
-            
-            // 睡眠函数用于可视化
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            
-            // 防止拖动时选中文本
-            document.addEventListener('mousedown', function(e) {
-                if (e.button === 0) {
-                    isMouseDown = true;
-                }
-            });
-            
-            document.addEventListener('mouseup', function() {
-                isMouseDown = false;
-            });
-            
-            document.addEventListener('dragstart', function(e) {
-                e.preventDefault();
-            });
-            
-            // 初始化网格
-            initializeGrid();
-        });
-    </script>
 </body>
 </html>
